@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Client04.py - Quản lý cấu hình trading bot từ xa
+Client04.py - Quản lý cấu hình trading bot từ xa 250729
 Chạy trên Android (Termux) để thay đổi cấu hình database
 """
 
