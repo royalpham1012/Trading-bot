@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Cấu hình
-SERVER_URL = "https://f5d21b259c01.ngrok-free.app"  # Ngrok URL
+SERVER_URL = "https://2e06c59cde61.ngrok-free.app"  # Ngrok URL
 TIMEOUT = 10
 
 class ConfigManager:
