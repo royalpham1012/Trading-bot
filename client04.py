@@ -521,4 +521,3 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ Lỗi không mong muốn: {e}")
         print("Hãy kiểm tra lại và thử lại")
-      print("Hãy kiểm tra lại và thử lại")
