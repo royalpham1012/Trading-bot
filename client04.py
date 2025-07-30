@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Client04.py 250730---- Quản lý cấu hình trading bot từ xa 250729
+Client04.py - Quản lý cấu hình trading bot từ xa
 Chạy trên Android (Termux) để thay đổi cấu hình database
 """
 
@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 # Cấu hình
-SERVER_URL = "https://f5d21b259c01.ngrok-free.app"  # Thay đổi IP này thành IP của máy chủ
+SERVER_URL = "https://f5d21b259c01.ngrok-free.app"  # Ngrok URL
 TIMEOUT = 10
 
 class ConfigManager:
@@ -521,3 +521,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ Lỗi không mong muốn: {e}")
         print("Hãy kiểm tra lại và thử lại")
+      print("Hãy kiểm tra lại và thử lại")
