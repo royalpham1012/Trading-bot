@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Client04.py - 250730 Quản lý cấu hình trading bot từ xa
+Client04.py - Quản lý cấu hình trading bot từ xa
 Chạy trên Android (Termux) để thay đổi cấu hình database
 """
 
@@ -103,6 +103,19 @@ class ConfigManager:
         except Exception as e:
             print(f"❌ Lỗi: {e}")
             return False
+    
+    def refresh_bot(self):
+        """Gửi lệnh refresh bot"""
+        try:
+            response = self.session.post(f"{self.server_url}/api/refresh-bot")
+            if response.status_code == 200:
+                result = response.json()
+                return True, result.get('message', 'Refresh bot thành công')
+            else:
+                error_data = response.json()
+                return False, error_data.get('message', 'Lỗi không xác định')
+        except Exception as e:
+            return False, f"Lỗi kết nối: {e}"
 
 def clear_screen():
     """Xóa màn hình"""
@@ -391,6 +404,63 @@ def show_test_settings_menu(config_manager):
                 print("❌ Lựa chọn không hợp lệ")
                 input("Nhấn Enter để tiếp tục...")
 
+def show_refresh_bot_menu(config_manager):
+    """Hiển thị menu refresh bot"""
+    while True:
+        clear_screen()
+        show_header()
+        print("🔄 REFRESH BOT")
+        print("-" * 60)
+        
+        print("📋 Thông tin:")
+        print("  • Refresh bot sẽ khôi phục trading ngay lập tức")
+        print("  • Reset các flag thông báo (profit/drawdown)")
+        print("  • Cập nhật balance_at_5am = balance hiện tại")
+        print("  • Không cần chờ đến 02:00 ngày hôm sau")
+        
+        print("\n⚠️  Lưu ý:")
+        print("  • Chỉ sử dụng khi bot đã dừng trading")
+        print("  • Đảm bảo thị trường phù hợp để tiếp tục")
+        
+        print("\n🔧 Tùy chọn:")
+        print("  0. Quay lại menu chính")
+        print("  1. 🔄 Kích hoạt Refresh Bot (ON)")
+        print("  2. 📊 Kiểm tra trạng thái bot")
+        
+        choice = input("\nChọn tùy chọn: ").strip()
+        
+        if choice == '0':
+            return
+        elif choice == '1':
+            print("\n🔄 Đang kích hoạt Refresh Bot...")
+            success, message = config_manager.refresh_bot()
+            if success:
+                print("✅ " + message)
+                print("\n📋 Bot sẽ thực hiện:")
+                print("  • Khôi phục trading ngay lập tức")
+                print("  • Reset các flag thông báo")
+                print("  • Cập nhật balance_at_5am")
+                print("  • Bắt đầu kiểm tra tín hiệu mới")
+            else:
+                print("❌ " + message)
+            input("\nNhấn Enter để tiếp tục...")
+        elif choice == '2':
+            print("\n📊 Kiểm tra trạng thái bot...")
+            config = config_manager.get_all_config()
+            if config:
+                test_settings = config['test_settings']
+                refresh_status = test_settings.get('refresh_bot', 'N/A')
+                print(f"  • Refresh Bot Status: {refresh_status}")
+                print(f"  • Trading Paused: {test_settings.get('trading_paused', 'N/A')}")
+                print(f"  • Profit Target: {test_settings.get('profit_target', 'N/A')}")
+                print(f"  • Drawdown Limit: {test_settings.get('drawdown_limit', 'N/A')}")
+            else:
+                print("❌ Không thể lấy thông tin trạng thái")
+            input("\nNhấn Enter để tiếp tục...")
+        else:
+            print("❌ Lựa chọn không hợp lệ")
+            input("Nhấn Enter để tiếp tục...")
+
 def show_main_menu(config_manager):
     """Hiển thị menu chính"""
     while True:
@@ -419,17 +489,23 @@ def show_main_menu(config_manager):
             print(f"  - Strategies: {len(config['strategies'])} items")
             print(f"  - Strategy Configs: {len(config['strategy_config'])} items")
             print(f"  - Test Settings: {len(config['test_settings'])} items")
+            
+            # Hiển thị trạng thái refresh bot
+            test_settings = config['test_settings']
+            refresh_status = test_settings.get('refresh_bot', 'N/A')
+            print(f"  - Refresh Bot: {refresh_status}")
         
         print("\n🔧 MENU CHÍNH:")
         print("  1. ⚙️  Quản lý Settings")
         print("  2. 🎯 Quản lý Strategies")
         print("  3. ⚙️  Quản lý Strategy Config")
         print("  4. 🧪 Quản lý Test Settings")
-        print("  5. 📊 Xem toàn bộ cấu hình")
+        print("  5. 🔄 Refresh Bot")
+        print("  6. 📊 Xem toàn bộ cấu hình")
         print("  0. 🚪 Thoát")
         print("-" * 60)
         
-        choice = input("Chọn chức năng (0-5): ").strip()
+        choice = input("Chọn chức năng (0-6): ").strip()
         
         if choice == '0':
             print("👋 Tạm biệt!")
@@ -443,6 +519,8 @@ def show_main_menu(config_manager):
         elif choice == '4':
             show_test_settings_menu(config_manager)
         elif choice == '5':
+            show_refresh_bot_menu(config_manager)
+        elif choice == '6':
             show_full_config(config_manager)
         else:
             print("❌ Lựa chọn không hợp lệ!")
