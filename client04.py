@@ -161,7 +161,7 @@ def show_mt5_account_info(config_manager):
     enter_thread = threading.Thread(target=check_for_enter, daemon=True)
     enter_thread.start()
     
-    print("🔄 Bắt đầu cập nhật realtime mỗi giây...")
+    print("🔄 Bắt đầu cập nhật realtime mỗi 30 giây...")
     time.sleep(0.5)
     
     while not stop_updating:
@@ -252,10 +252,10 @@ def show_mt5_account_info(config_manager):
                 print(f"\n⏰ Cập nhật lúc: {timestamp}")
             
             print("\n" + "=" * 60)
-            print(f"🔄 Cập nhật lần thứ {update_count} - Mỗi giây - Nhấn Enter để dừng")
+            print(f"🔄 Cập nhật lần thứ {update_count} - Mỗi 30 giây - Nhấn Enter để dừng")
             
-            # Chờ 1 giây trước khi cập nhật lại
-            time.sleep(1)
+            # Chờ 30 giây trước khi cập nhật lại
+            time.sleep(30)
             
         except KeyboardInterrupt:
             break
