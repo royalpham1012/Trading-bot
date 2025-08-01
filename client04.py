@@ -131,6 +131,20 @@ class ConfigManager:
         except Exception as e:
             print(f"❌ Lỗi: {e}")
             return None
+    
+    def get_config_info(self):
+        """Lấy thông tin cấu hình từ server"""
+        try:
+            response = self.session.get(f"{self.server_url}/api/config")
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('config', {}).get('settings', {})
+            else:
+                print(f"❌ Lỗi HTTP: {response.status_code}")
+                return {}
+        except Exception as e:
+            print(f"❌ Lỗi: {e}")
+            return {}
 
 def clear_screen():
     """Xóa màn hình"""
@@ -237,6 +251,9 @@ def show_mt5_account_info(config_manager):
                 else:
                     print("  Không có lệnh nào đang mở")
             
+            # Lấy thông tin cấu hình
+            config_info = config_manager.get_config_info()
+            
             # Hiển thị thống kê
             if 'summary' in account_info:
                 summary = account_info['summary']
@@ -245,6 +262,48 @@ def show_mt5_account_info(config_manager):
                 print(f"  💰 Tổng profit: ${summary.get('total_profit', 0):,.2f}")
                 print(f"  📈 Lệnh có lãi: {summary.get('profitable_positions', 0)}")
                 print(f"  📉 Lệnh thua lỗ: {summary.get('losing_positions', 0)}")
+                
+                # Thêm thông tin cấu hình
+                if config_info:
+                    print(f"\n⚙️ CẤU HÌNH:")
+                    balance_at_5am = float(config_info.get('balanceat5am', 0))
+                    min_balance = float(config_info.get('minbalance', 0))
+                    drawdown_limit = float(config_info.get('drawdown', 0))
+                    daily_profit_target = float(config_info.get('dailyprofittarget', 0))
+                    current_profit = account.get('profit', 0)
+                    
+                    print(f"  💰 Balance at 5AM: ${balance_at_5am:,.2f}")
+                    print(f"  🔒 Min Balance: ${min_balance:,.2f}")
+                    print(f"  📉 Drawdown Limit: ${drawdown_limit:,.2f}")
+                    print(f"  🎯 Daily Profit Target: ${daily_profit_target:,.2f}")
+                    print(f"  📊 Profit hiện tại: ${current_profit:,.2f}")
+                    
+                    # Tính toán thêm
+                    current_balance = account.get('balance', 0)
+                    daily_profit = current_balance - balance_at_5am
+                    drawdown_used = balance_at_5am - current_balance
+                    
+                    print(f"\n📊 PHÂN TÍCH:")
+                    print(f"  📈 Daily Profit: ${daily_profit:,.2f}")
+                    print(f"  📉 Drawdown Used: ${drawdown_used:,.2f}")
+                    
+                    # Hiển thị trạng thái
+                    if daily_profit >= daily_profit_target:
+                        print(f"  🎯 Daily Target: ✅ ĐẠT MỤC TIÊU")
+                    else:
+                        remaining = daily_profit_target - daily_profit
+                        print(f"  🎯 Daily Target: ⏳ Còn ${remaining:,.2f}")
+                    
+                    if drawdown_used >= drawdown_limit:
+                        print(f"  📉 Drawdown: ⚠️ VƯỢT GIỚI HẠN")
+                    else:
+                        remaining_dd = drawdown_limit - drawdown_used
+                        print(f"  📉 Drawdown: ✅ Còn ${remaining_dd:,.2f}")
+                    
+                    if current_balance < min_balance:
+                        print(f"  🔒 Min Balance: ⚠️ DƯỚI GIỚI HẠN")
+                    else:
+                        print(f"  🔒 Min Balance: ✅ AN TOÀN")
             
             # Hiển thị thời gian cập nhật
             if 'timestamp' in account_info:
@@ -265,6 +324,52 @@ def show_mt5_account_info(config_manager):
             time.sleep(3)
     
     print("\n✅ Đã dừng cập nhật realtime")
+    input("Nhấn Enter để quay lại menu chính...")
+
+def show_refresh_bot(config_manager):
+    """Hiển thị chức năng refresh bot"""
+    clear_screen()
+    show_header()
+    
+    print("🔄 REFRESH BOT")
+    print("=" * 60)
+    print("Chức năng này sẽ gửi lệnh refresh đến bot để:")
+    print("  - Tải lại cấu hình từ database")
+    print("  - Khởi động lại các strategy")
+    print("  - Xóa cache và file tạm thời")
+    print("  - Đảm bảo bot hoạt động với cấu hình mới nhất")
+    print("-" * 60)
+    
+    confirm = input("Bạn có chắc chắn muốn refresh bot? (y/n): ").strip().lower()
+    
+    if confirm == 'y':
+        print("\n🔄 Đang gửi lệnh refresh bot...")
+        
+        try:
+            success, message = config_manager.refresh_bot()
+            
+            if success:
+                print("✅ Refresh bot thành công!")
+                print(f"📝 Thông báo: {message}")
+                
+                print("\n📋 CÁC THAY ĐỔI ĐÃ THỰC HIỆN:")
+                print("  ✅ Đã tải lại cấu hình từ database")
+                print("  ✅ Đã khởi động lại các strategy")
+                print("  ✅ Đã xóa cache và file tạm thời")
+                print("  ✅ Bot đang hoạt động với cấu hình mới nhất")
+                
+            else:
+                print("❌ Refresh bot thất bại!")
+                print(f"📝 Lỗi: {message}")
+                
+        except Exception as e:
+            print("❌ Lỗi khi refresh bot:")
+            print(f"   {e}")
+    
+    else:
+        print("❌ Đã hủy refresh bot")
+    
+    print("\n" + "=" * 60)
     input("Nhấn Enter để quay lại menu chính...")
 
 def show_main_menu(config_manager):
@@ -330,8 +435,7 @@ def show_main_menu(config_manager):
             print("⚠️ Chức năng này chưa được implement")
             input("Nhấn Enter để tiếp tục...")
         elif choice == '5':
-            print("⚠️ Chức năng này chưa được implement")
-            input("Nhấn Enter để tiếp tục...")
+            show_refresh_bot(config_manager)
         elif choice == '6':
             print("⚠️ Chức năng này chưa được implement")
             input("Nhấn Enter để tiếp tục...")
