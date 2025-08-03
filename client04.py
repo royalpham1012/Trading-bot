@@ -13,7 +13,7 @@ import threading
 from datetime import datetime
 
 # Cấu hình
-SERVER_URL = "https://2e06c59cde61.ngrok-free.app"  # Ngrok URL
+SERVER_URL = "https://2506260734c7.ngrok-free.app"  # Ngrok URL
 TIMEOUT = 10
 
 class ConfigManager:
